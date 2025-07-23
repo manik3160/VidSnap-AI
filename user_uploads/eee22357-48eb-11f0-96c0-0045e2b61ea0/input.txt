@@ -1,0 +1,6 @@
+file '4.jpg'
+ duration 1 
+file 'WIN_20220729_15_03_30_Pro.jpg'
+ duration 1 
+file 'WIN_20220729_15_03_38_Pro.jpg'
+ duration 1 
