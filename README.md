@@ -70,25 +70,6 @@ Get your ElevenLabs API key:
 3. Go to your profile settings
 4. Copy your API key
 5. Add it to your `.env` file
-
-## Deployment 🌐
-
-### Railway (Recommended)
-1. Connect your GitHub repository to Railway
-2. Railway will automatically detect and deploy your Flask app
-3. Add your `ELEVENLABS_API_KEY` in Railway's environment variables
-
-### Render
-1. Create a new Web Service on Render
-2. Connect your GitHub repository
-3. Set build command: `pip install -r requirements.txt`
-4. Set start command: `python main.py`
-5. Add environment variables
-
-### Heroku
-1. Install Heroku CLI
-2. Run `heroku create your-app-name`
-3. Run `git push heroku main`
 4. Set environment variables in Heroku dashboard
 
 ## File Structure 📁
@@ -127,8 +108,8 @@ This project is open source and available under the [MIT License](LICENSE).
 
 If you have any questions or need help, feel free to:
 - Open an issue on GitHub
-- Contact us at [your-email@example.com]
+- Contact us at maniksingh3606@gmail.com
 
 ---
 
-Made with ❤️ by [Your Name]
+Made with ❤️ by Manik
