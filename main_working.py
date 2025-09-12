@@ -89,16 +89,26 @@ def test_log():
     print("🧪 TEST LOG MESSAGE - This should appear in logs!")
     return "Test log message sent - check Railway logs!"
 
+@app.route("/test-create")
+def test_create():
+    print("🧪 TEST CREATE ROUTE CALLED!")
+    return "Test create route working!"
+
 @app.route("/create", methods=["GET", "POST"])
 def create():
     myid = str(uuid.uuid1())
-    print(f"🔍 CREATE ROUTE CALLED - Method: {request.method}")
+    print("=" * 50)
+    print("🔍 CREATE ROUTE CALLED")
+    print(f"Method: {request.method}")
+    print("=" * 50)
 
     if request.method == "POST":
-        print(f"🚨 POST REQUEST RECEIVED!")
-        print(f"📊 Request content type: {request.content_type}")
-        print(f"📋 Form data: {dict(request.form)}")
-        print(f"📎 Files: {list(request.files.keys())}")
+        print("🚨🚨🚨 POST REQUEST RECEIVED! 🚨🚨🚨")
+        print(f"Content-Type: {request.content_type}")
+        print(f"Headers: {dict(request.headers)}")
+        print(f"Form data: {dict(request.form)}")
+        print(f"Files: {list(request.files.keys())}")
+        print("=" * 50)
         
         rec_id = request.form.get("uuid")
         desc = request.form.get("text")
