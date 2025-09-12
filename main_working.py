@@ -84,11 +84,18 @@ def process_reel_simple(reel_id, description, title):
 def home():
     return render_template("index.html")
 
+@app.route("/test-log")
+def test_log():
+    print("🧪 TEST LOG MESSAGE - This should appear in logs!")
+    return "Test log message sent - check Railway logs!"
+
 @app.route("/create", methods=["GET", "POST"])
 def create():
     myid = str(uuid.uuid1())
+    print(f"🔍 CREATE ROUTE CALLED - Method: {request.method}")
 
     if request.method == "POST":
+        print(f"🚨 POST REQUEST RECEIVED!")
         rec_id = request.form.get("uuid")
         desc = request.form.get("text")
         title = request.form.get("title", "My Reel")
