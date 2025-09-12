@@ -1,19 +1,412 @@
 {% extends "base.html" %}
 
-{% block title %}Gallery - AI Reel Generator{% endblock %}
+{% block title %}Gallery - VidSnapAI{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/gallery.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="container gallery-container">
-    <h1 class="gallery-title">Reel Gallery</h1>
-    <div class="gallery-grid">
-        {% for reel in reels %}
-        <video src="/static/reels/{{reel}}" controls></video>
-        
-        {% endfor %}
+<!-- Gallery Hero -->
+<section class="gallery-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="gallery-title">Your <span class="text-gradient">Reel Gallery</span></h1>
+                <p class="gallery-subtitle">
+                    Browse and manage all your created reels. Download, share, or delete them as needed.
+                </p>
+                <div class="gallery-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ reels|length }}</div>
+                        <div class="stat-label">Total Reels</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ reels|length * 2 }}</div>
+                        <div class="stat-label">Minutes Created</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</section>
+
+<!-- Gallery Content -->
+<section class="gallery-content">
+    <div class="container">
+        {% if reels %}
+        <div class="gallery-controls">
+            <div class="gallery-filters">
+                <button class="filter-btn active" data-filter="all">All Reels</button>
+                <button class="filter-btn" data-filter="recent">Recent</button>
+                <button class="filter-btn" data-filter="favorites">Favorites</button>
+            </div>
+            <div class="gallery-actions">
+                <button class="btn btn-outline-primary" onclick="refreshGallery()">
+                    <i class="fas fa-sync-alt me-2"></i>Refresh
+                </button>
+                <a href="/create" class="btn btn-gradient">
+                    <i class="fas fa-plus me-2"></i>Create New
+                </a>
+            </div>
+        </div>
+        
+        <div class="gallery-grid" id="galleryGrid">
+            {% for reel in reels %}
+            <div class="reel-card" data-reel="{{ reel }}">
+                <div class="reel-thumbnail">
+                    <video 
+                        src="/static/reels/{{reel}}" 
+                        preload="metadata" 
+                        playsinline
+                        webkit-playsinline
+                        controls="false"
+                        loop
+                    >
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="reel-overlay">
+                        <button class="play-btn" onclick="playVideo(this)">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="volume-btn" onclick="toggleVolume(this)" title="Toggle Volume">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <div class="reel-duration">
+                            <i class="fas fa-clock"></i>
+                            <span>0:30</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="reel-info">
+                    <h5 class="reel-name">{{ reel.split('.')[0][:20] }}{% if reel.split('.')[0]|length > 20 %}...{% endif %}</h5>
+                    <p class="reel-date">Created recently</p>
+                </div>
+                <div class="reel-actions">
+                    <button class="action-btn download-btn" onclick="downloadReel('{{reel}}')" title="Download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="action-btn share-btn" onclick="shareReel('{{reel}}')" title="Share">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button class="action-btn delete-btn" onclick="deleteReel('{{reel}}', this)" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-gallery">
+            <div class="empty-icon">
+                <i class="fas fa-video"></i>
+            </div>
+            <h3>No Reels Yet</h3>
+            <p>You haven't created any reels yet. Start by creating your first amazing reel!</p>
+            <a href="/create" class="btn btn-gradient btn-lg">
+                <i class="fas fa-plus me-2"></i>Create Your First Reel
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+// Gallery functionality
+let currentFilter = 'all';
+
+// Delete reel function
+function deleteReel(reelName, buttonElement) {
+    console.log('Attempting to delete reel:', reelName);
+    
+    if (confirm('Are you sure you want to delete this reel? This action cannot be undone.')) {
+        // Disable the button to prevent multiple clicks
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        fetch(`/delete_reel/${reelName}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            console.log('Delete response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Delete response data:', data);
+            if (data.success) {
+                // Remove the reel from the page
+                const reelCard = buttonElement.closest('.reel-card');
+                if (reelCard) {
+                    reelCard.style.opacity = '0.5';
+                    reelCard.style.transform = 'scale(0.95)';
+                    reelCard.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(() => {
+                        reelCard.remove();
+                        showToast('Reel deleted successfully!', 'success');
+                        updateGalleryStats();
+                    }, 300);
+                } else {
+                    showToast('Reel deleted successfully!', 'success');
+                    // Reload the page if we can't find the element
+                    setTimeout(() => location.reload(), 1000);
+                }
+            } else {
+                showToast('Error deleting reel: ' + data.message, 'error');
+                // Re-enable the button
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = '<i class="fas fa-trash"></i>';
+            }
+        })
+        .catch(error => {
+            console.error('Delete error:', error);
+            showToast('Error deleting reel. Please try again.', 'error');
+            // Re-enable the button
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = '<i class="fas fa-trash"></i>';
+        });
+    }
+}
+
+// Download reel function
+function downloadReel(reelName) {
+    const link = document.createElement('a');
+    link.href = `/static/reels/${reelName}`;
+    link.download = reelName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Download started!', 'success');
+}
+
+// Share reel function
+function shareReel(reelName) {
+    if (navigator.share) {
+        navigator.share({
+            title: 'Check out my reel!',
+            text: 'I created this amazing reel with VidSnapAI',
+            url: window.location.origin + `/static/reels/${reelName}`
+        }).then(() => {
+            showToast('Reel shared successfully!', 'success');
+        }).catch((error) => {
+            console.log('Error sharing:', error);
+            copyToClipboard(window.location.origin + `/static/reels/${reelName}`);
+        });
+    } else {
+        copyToClipboard(window.location.origin + `/static/reels/${reelName}`);
+    }
+}
+
+// Copy to clipboard function
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('Link copied to clipboard!', 'success');
+    }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Link copied to clipboard!', 'success');
+    });
+}
+
+// Play video function
+function playVideo(button) {
+    const video = button.closest('.reel-thumbnail').querySelector('video');
+    const overlay = button.closest('.reel-overlay');
+    const reelCard = button.closest('.reel-card');
+    
+    // Pause all other videos first
+    const allVideos = document.querySelectorAll('video');
+    allVideos.forEach(v => {
+        if (v !== video && !v.paused) {
+            v.pause();
+            const otherButton = v.closest('.reel-thumbnail').querySelector('.play-btn');
+            if (otherButton) {
+                otherButton.innerHTML = '<i class="fas fa-play"></i>';
+                otherButton.closest('.reel-overlay').style.opacity = '1';
+            }
+        }
+    });
+    
+    if (video.paused) {
+        video.play().then(() => {
+            button.innerHTML = '<i class="fas fa-pause"></i>';
+            overlay.style.opacity = '0.3';
+            reelCard.classList.add('playing');
+        }).catch(error => {
+            console.error('Error playing video:', error);
+            showToast('Error playing video. Please try again.', 'error');
+        });
+    } else {
+        video.pause();
+        button.innerHTML = '<i class="fas fa-play"></i>';
+        overlay.style.opacity = '1';
+        reelCard.classList.remove('playing');
+    }
+}
+
+// Toggle volume function
+function toggleVolume(button) {
+    const video = button.closest('.reel-thumbnail').querySelector('video');
+    const icon = button.querySelector('i');
+    
+    if (video.muted) {
+        video.muted = false;
+        icon.className = 'fas fa-volume-up';
+        button.title = 'Mute';
+        showToast('Volume on', 'success');
+    } else {
+        video.muted = true;
+        icon.className = 'fas fa-volume-mute';
+        button.title = 'Unmute';
+        showToast('Volume muted', 'info');
+    }
+}
+
+// Refresh gallery function
+function refreshGallery() {
+    showLoading();
+    setTimeout(() => {
+        location.reload();
+    }, 1000);
+}
+
+// Filter functionality
+function initFilters() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const reelCards = document.querySelectorAll('.reel-card');
+    
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Update active button
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Filter reels
+            const filter = btn.dataset.filter;
+            currentFilter = filter;
+            
+            reelCards.forEach(card => {
+                if (filter === 'all' || card.dataset.reel.includes(filter)) {
+                    card.style.display = 'block';
+                    card.style.animation = 'fadeIn 0.3s ease';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    });
+}
+
+// Update gallery stats
+function updateGalleryStats() {
+    const reelCards = document.querySelectorAll('.reel-card');
+    const statNumbers = document.querySelectorAll('.stat-number');
+    
+    if (statNumbers.length >= 2) {
+        statNumbers[0].textContent = reelCards.length;
+        statNumbers[1].textContent = reelCards.length * 2;
+    }
+}
+
+// Initialize video durations and events
+function initVideoDurations() {
+    const videos = document.querySelectorAll('video[preload="metadata"]');
+    
+    videos.forEach(video => {
+        // Load metadata for duration
+        video.addEventListener('loadedmetadata', () => {
+            const duration = video.duration;
+            const minutes = Math.floor(duration / 60);
+            const seconds = Math.floor(duration % 60);
+            const durationSpan = video.closest('.reel-card').querySelector('.reel-duration span');
+            
+            if (durationSpan) {
+                durationSpan.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        });
+        
+        // Handle video end
+        video.addEventListener('ended', () => {
+            const playButton = video.closest('.reel-thumbnail').querySelector('.play-btn');
+            const overlay = video.closest('.reel-overlay');
+            const reelCard = video.closest('.reel-card');
+            
+            if (playButton) {
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
+            }
+            if (overlay) {
+                overlay.style.opacity = '1';
+            }
+            if (reelCard) {
+                reelCard.classList.remove('playing');
+            }
+        });
+        
+        // Handle video errors
+        video.addEventListener('error', (e) => {
+            console.error('Video error:', e);
+            const playButton = video.closest('.reel-thumbnail').querySelector('.play-btn');
+            if (playButton) {
+                playButton.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                playButton.title = 'Video failed to load';
+            }
+        });
+        
+        // Handle video loading
+        video.addEventListener('loadstart', () => {
+            const playButton = video.closest('.reel-thumbnail').querySelector('.play-btn');
+            if (playButton) {
+                playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            }
+        });
+        
+        // Handle video can play
+        video.addEventListener('canplay', () => {
+            const playButton = video.closest('.reel-thumbnail').querySelector('.play-btn');
+            if (playButton) {
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        });
+    });
+}
+
+// Initialize gallery
+document.addEventListener('DOMContentLoaded', () => {
+    initFilters();
+    initVideoDurations();
+    updateGalleryStats();
+    
+    // Add smooth animations
+    const reelCards = document.querySelectorAll('.reel-card');
+    reelCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.classList.add('fade-in');
+    });
+});
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.6s ease forwards;
+    }
+`;
+document.head.appendChild(style);
+</script>
 {% endblock %} 

@@ -1,38 +1,150 @@
 {% extends "base.html" %}
 
-{% block title %}Create Reel - AI Reel Generator{% endblock %}
+{% block title %}Create Reel - VidSnapAI{% endblock %}
 
 {% block extra_css %} 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/create.css') }}">
 {% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
+<section class="create-hero">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="create-title">Create Your <span class="text-gradient">Amazing Reel</span></h1>
+                <p class="create-subtitle">
+                    Upload your photos and add a description. Our AI will generate a professional voiceover and create a stunning reel for you.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Upload Section -->
 <section class="upload-section">
     <div class="container">
-        <div class="upload-container">
-            <h1 class="upload-title">Create Your Reel</h1>
-            <p class="upload-instructions">Upload your video files to create an amazing reel. You can upload multiple files.</p>
-            
-            <form action="/create" enctype="multipart/form-data" method="post" class="dropzone" id="myDropzone">
-                <div class="fallback">
-                    <div id="fileInputs">
-                        <div class="file-input-group">
-                            <input name="file1" type="file" class="file-input" />
-                            <input name="uuid" type="hidden" value="{{myid}}">
-                            <button type="button" class="remove-file-btn" onclick="removeFileInput(this)" disabled>×</button>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="upload-card">
+                    {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endif %}
+                    
+                    <form action="/create" enctype="multipart/form-data" method="post" id="createForm">
+                        <input name="uuid" type="hidden" value="{{myid}}">
+                        
+                        <!-- File Upload Section -->
+                        <div class="upload-area">
+                            <div class="upload-header">
+                                <h3><i class="fas fa-images me-2"></i>Upload Your Images</h3>
+                                <p>Select multiple images to create your reel (JPG, PNG, GIF supported)</p>
+                            </div>
+                            
+                            <div class="file-upload-zone" id="fileUploadZone">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h4>Drag & Drop Images Here</h4>
+                                <p>or click to browse files</p>
+                                <input type="file" name="file1" id="fileInput" multiple accept="image/*" style="display: none;">
+                            </div>
+                            
+                            <div id="filePreview" class="file-preview"></div>
+                            
+                            <div class="file-actions">
+                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-plus me-2"></i>Add More Images
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" id="clearFiles" style="display: none;">
+                                    <i class="fas fa-trash me-2"></i>Clear All
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Text Input Section -->
+                        <div class="text-input-section">
+                            <div class="input-header">
+                                <h3><i class="fas fa-microphone me-2"></i>Add Your Story</h3>
+                                <p>Write a description that will be converted to voice for your reel</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <textarea 
+                                    class="form-control text-input" 
+                                    id="textInput" 
+                                    name="text" 
+                                    placeholder="Tell your story... What do you want to say about these images? This will be converted to a natural-sounding voiceover for your reel."
+                                    rows="6"
+                                    required
+                                ></textarea>
+                                <div class="input-footer">
+                                    <small style="color: var(--gray-300);">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Our AI will convert this text into a natural-sounding voiceover
+                                    </small>
+                                    <div class="char-count">
+                                        <span id="charCount">0</span>/500 characters
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Section -->
+                        <div class="submit-section">
+                            <button type="submit" class="btn btn-gradient btn-lg w-100" id="submitBtn">
+                                <i class="fas fa-magic me-2"></i>
+                                <span class="btn-text">Create My Reel</span>
+                                <div class="spinner-border spinner-border-sm ms-2" role="status" style="display: none;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </button>
+                            <p class="submit-note">
+                                <i class="fas fa-clock me-1"></i>
+                                Your reel will be ready in 2-3 minutes
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tips Section -->
+<section class="tips-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <h3 class="text-center mb-4">💡 Pro Tips for Better Reels</h3>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="tip-card">
+                            <i class="fas fa-image"></i>
+                            <h5>High Quality Images</h5>
+                            <p>Use clear, high-resolution photos for the best results</p>
                         </div>
                     </div>
-                    <button type="button" class="add-file-btn" onclick="addFileInput()">+ Add File</button>
+                    <div class="col-md-4">
+                        <div class="tip-card">
+                            <i class="fas fa-edit"></i>
+                            <h5>Engaging Stories</h5>
+                            <p>Write compelling descriptions that tell a story</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="tip-card">
+                            <i class="fas fa-mobile-alt"></i>
+                            <h5>Vertical Format</h5>
+                            <p>Images will be automatically optimized for mobile viewing</p>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="text-input-container">
-                    <textarea class="text-input" id="textInput" name="text" placeholder="Enter your text to be added as voice here..." rows="4"></textarea>
-                </div>
-                
-                <button type="submit" class="submit-btn" id="submitBtn">
-                    Create Reel
-                </button>
-            </form>
+            </div>
         </div>
     </div>
 </section>
@@ -40,23 +152,171 @@
 
 {% block extra_js %}
 <script>
-    let fileCounter = 2; // Start from 2 since we already have file1
+    let selectedFiles = [];
+    let fileCounter = 1;
 
-    function addFileInput() {
-        const fileInputs = document.getElementById('fileInputs');
-        const newFileInput = document.createElement('div');
-        newFileInput.className = 'file-input-group';
-        newFileInput.innerHTML = `
-            <input name="file${fileCounter}" type="file" class="file-input" />
-            <button type="button" class="remove-file-btn" onclick="removeFileInput(this)">×</button>
-        `;
-        fileInputs.appendChild(newFileInput);
-        fileCounter++;
+    // File upload handling
+    const fileInput = document.getElementById('fileInput');
+    const fileUploadZone = document.getElementById('fileUploadZone');
+    const filePreview = document.getElementById('filePreview');
+    const clearFilesBtn = document.getElementById('clearFiles');
+    const textInput = document.getElementById('textInput');
+    const charCount = document.getElementById('charCount');
+    const createForm = document.getElementById('createForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    // Drag and drop functionality
+    fileUploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadZone.classList.add('dragover');
+    });
+
+    fileUploadZone.addEventListener('dragleave', () => {
+        fileUploadZone.classList.remove('dragover');
+    });
+
+    fileUploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadZone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    fileUploadZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+        Array.from(files).forEach(file => {
+            if (file.type.startsWith('image/')) {
+                selectedFiles.push(file);
+                displayFilePreview(file);
+            }
+        });
+        updateFileActions();
     }
 
-    function removeFileInput(button) {
-        const fileInputGroup = button.parentElement;
-        fileInputGroup.remove();
+    function displayFilePreview(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            previewItem.innerHTML = `
+                <img src="${e.target.result}" alt="${file.name}">
+                <div class="preview-info">
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${formatFileSize(file.size)}</span>
+                </div>
+                <button type="button" class="remove-preview" onclick="removeFile('${file.name}')">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            filePreview.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
     }
+
+    function removeFile(fileName) {
+        selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+        updateFilePreview();
+        updateFileActions();
+    }
+
+    function updateFilePreview() {
+        filePreview.innerHTML = '';
+        selectedFiles.forEach(file => {
+            displayFilePreview(file);
+        });
+    }
+
+    function updateFileActions() {
+        if (selectedFiles.length > 0) {
+            clearFilesBtn.style.display = 'inline-block';
+        } else {
+            clearFilesBtn.style.display = 'none';
+        }
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Clear all files
+    clearFilesBtn.addEventListener('click', () => {
+        selectedFiles = [];
+        filePreview.innerHTML = '';
+        fileInput.value = '';
+        updateFileActions();
+    });
+
+    // Character count for text input
+    textInput.addEventListener('input', () => {
+        const count = textInput.value.length;
+        charCount.textContent = count;
+        
+        if (count > 500) {
+            charCount.style.color = 'var(--danger-color)';
+        } else if (count > 400) {
+            charCount.style.color = 'var(--warning-color)';
+        } else {
+            charCount.style.color = 'var(--gray-500)';
+        }
+    });
+
+    // Form submission
+    createForm.addEventListener('submit', (e) => {
+        if (selectedFiles.length === 0) {
+            e.preventDefault();
+            showToast('Please select at least one image', 'error');
+            return;
+        }
+
+        if (!textInput.value.trim()) {
+            e.preventDefault();
+            showToast('Please enter a description for your reel', 'error');
+            return;
+        }
+
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.querySelector('.btn-text').textContent = 'Creating Reel...';
+        submitBtn.querySelector('.spinner-border').style.display = 'inline-block';
+        
+        // Create form data with selected files
+        const formData = new FormData();
+        formData.append('uuid', document.querySelector('input[name="uuid"]').value);
+        formData.append('text', textInput.value);
+        
+        selectedFiles.forEach((file, index) => {
+            formData.append(`file${index + 1}`, file);
+        });
+
+        // Submit form
+        fetch('/create', {
+            method: 'POST',
+            body: formData
+        }).then(response => {
+            if (response.ok) {
+                showToast('Reel creation started! Check the gallery in a few minutes.', 'success');
+                setTimeout(() => {
+                    window.location.href = '/gallery';
+                }, 2000);
+            } else {
+                throw new Error('Upload failed');
+            }
+        }).catch(error => {
+            showToast('Error creating reel. Please try again.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.querySelector('.btn-text').textContent = 'Create My Reel';
+            submitBtn.querySelector('.spinner-border').style.display = 'none';
+        });
+    });
 </script>
 {% endblock %} 

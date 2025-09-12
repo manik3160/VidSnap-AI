@@ -1,53 +1,207 @@
 {% extends "base.html" %}
 
-{% block title %}AI Reel Generator - Create Amazing Instagram Reels{% endblock %}
+{% block title %}VidSnapAI - AI-Powered Reel Generator{% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
 <section class="hero-section">
     <div class="container">
-        <h1 class="hero-title">Create Amazing Instagram Reels with AI</h1>
-        <p class="hero-subtitle">Transform your videos into engaging reels with our AI-powered platform</p>
-        <a href="/create" class="cta-button">Start Creating Now</a>
-    </div>
-</section>
-
-<section class="features-section">
-    <div class="container">
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <i class="fas fa-magic feature-icon"></i>
-                    <h3>AI-Powered Editing</h3>
-                    <p>Let our AI analyze and enhance your videos automatically</p>
-                </div>
+        <div class="hero-content">
+            <h1 class="hero-title">Transform Images into <span class="text-gradient">Stunning Reels</span></h1>
+            <p class="hero-subtitle">
+                Create engaging Instagram reels from your photos with AI-powered voice generation and automatic video creation. 
+                No editing skills required!
+            </p>
+            <div class="hero-actions">
+                <a href="/create" class="cta-button">
+                    <i class="fas fa-plus-circle"></i>
+                    Create Your First Reel
+                </a>
+                <a href="/gallery" class="btn btn-outline-light btn-lg ms-3">
+                    <i class="fas fa-play-circle me-2"></i>
+                    View Gallery
+                </a>
             </div>
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <i class="fas fa-film feature-icon"></i>
-                    <h3>Smart Stitching</h3>
-                    <p>Seamlessly combine multiple clips into perfect reels</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">1000+</div>
+                    <div class="stat-label">Reels Created</div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="feature-card">
-                    <i class="fas fa-music feature-icon"></i>
-                    <h3>Music Integration</h3>
-                    <p>Add trending music and sound effects to your reels</p>
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Happy Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Satisfaction</div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-4 fw-bold mb-3" style="color: white;">Why Choose <span class="text-gradient-blue">VidSnapAI?</span></h2>
+                <p class="lead" style="color: var(--gray-300);">
+                    Our AI-powered platform makes it incredibly easy to create professional-looking reels from your photos.
+                </p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <i class="fas fa-brain feature-icon"></i>
+                    <h3>AI Voice Generation</h3>
+                    <p>Transform your text descriptions into natural-sounding voiceovers using advanced AI technology from ElevenLabs.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <i class="fas fa-magic feature-icon"></i>
+                    <h3>Automatic Video Creation</h3>
+                    <p>Our smart algorithm automatically combines your images with generated audio to create perfectly timed reels.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <i class="fas fa-mobile-alt feature-icon"></i>
+                    <h3>Mobile Optimized</h3>
+                    <p>Perfect 9:16 aspect ratio optimized for Instagram, TikTok, and other social media platforms.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <i class="fas fa-bolt feature-icon"></i>
+                    <h3>Lightning Fast</h3>
+                    <p>Create professional reels in minutes, not hours. Our optimized processing ensures quick turnaround times.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <i class="fas fa-palette feature-icon"></i>
+                    <h3>Professional Quality</h3>
+                    <p>High-resolution output with smooth transitions and professional-grade video encoding for the best results.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card">
+                    <i class="fas fa-share-alt feature-icon"></i>
+                    <h3>Easy Sharing</h3>
+                    <p>Download your reels instantly and share them directly to your social media accounts with one click.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works-section py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-lg-8 mx-auto">
+                <h2 class="display-4 fw-bold mb-3" style="color: white;">How It <span class="text-gradient-blue">Works</span></h2>
+                <p class="lead" style="color: var(--gray-300);">Creating amazing reels is as easy as 1-2-3</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="step-card text-center">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-upload"></i>
+                    </div>
+                    <h4>Upload Images</h4>
+                    <p>Select and upload your favorite photos that tell your story</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="step-card text-center">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <h4>Write Description</h4>
+                    <p>Add a compelling description that will be converted to voice</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="step-card text-center">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h4>Get Your Reel</h4>
+                    <p>Download your professionally created reel ready for sharing</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Showcase Section -->
 <section class="showcase-section">
     <div class="container">
-        <h2 class="showcase-title">Featured Creations</h2>
+        <div class="showcase-title">
+            <h2 style="color: white;">Featured <span class="text-gradient-blue">Creations</span></h2>
+            <p style="color: var(--gray-300);">See what our users are creating with VidSnapAI</p>
+        </div>
         <div class="image-grid">
-            <img src="{{ url_for('static', filename='1.jpg') }}" alt="Reel Example 1" class="showcase-image">
-            <img src="{{ url_for('static', filename='2.jpg') }}" alt="Reel Example 2" class="showcase-image">
-            <img src="{{ url_for('static', filename='3.jpg') }}" alt="Reel Example 3" class="showcase-image">
-            <img src="{{ url_for('static', filename='4.jpg') }}" alt="Reel Example 4" class="showcase-image">
-            <img src="{{ url_for('static', filename='5.jpg') }}" alt="Reel Example 5" class="showcase-image">
+            <div class="showcase-item">
+                <img src="{{ url_for('static', filename='1.jpg') }}" alt="Reel Example 1" class="showcase-image">
+                <div class="showcase-overlay">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+            </div>
+            <div class="showcase-item">
+                <img src="{{ url_for('static', filename='2.jpg') }}" alt="Reel Example 2" class="showcase-image">
+                <div class="showcase-overlay">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+            </div>
+            <div class="showcase-item">
+                <img src="{{ url_for('static', filename='3.jpg') }}" alt="Reel Example 3" class="showcase-image">
+                <div class="showcase-overlay">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+            </div>
+            <div class="showcase-item">
+                <img src="{{ url_for('static', filename='4.jpg') }}" alt="Reel Example 4" class="showcase-image">
+                <div class="showcase-overlay">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+            </div>
+            <div class="showcase-item">
+                <img src="{{ url_for('static', filename='5.jpg') }}" alt="Reel Example 5" class="showcase-image">
+                <div class="showcase-overlay">
+                    <i class="fas fa-play-circle"></i>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="/gallery" class="btn-gradient">
+                <i class="fas fa-images me-2"></i>
+                View All Creations
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="display-4 fw-bold mb-4" style="color: white;">Ready to Create Amazing Reels?</h2>
+                <p class="lead mb-4" style="color: rgba(255, 255, 255, 0.9);">Join thousands of creators who are already using VidSnapAI to create engaging content.</p>
+                <a href="/create" class="cta-button btn-lg">
+                    <i class="fas fa-rocket me-2"></i>
+                    Start Creating Now
+                </a>
+            </div>
         </div>
     </div>
 </section>
