@@ -23,28 +23,41 @@ def process_reel_simple(reel_id, description, title):
     """Process a reel without FFmpeg - just create a placeholder video"""
     try:
         print(f"🎬 Processing reel: {reel_id}")
+        print(f"📝 Description: {description}")
+        print(f"🏷️ Title: {title}")
         
         # Find the user upload folder
         upload_dir = os.path.join(UPLOAD_FOLDER, reel_id)
+        print(f"📁 Looking for upload directory: {upload_dir}")
         
         if not os.path.exists(upload_dir):
             print(f"❌ Upload directory not found: {upload_dir}")
             return
         
+        print(f"✅ Upload directory found: {upload_dir}")
+        
+        # List files in directory
+        files_in_dir = os.listdir(upload_dir)
+        print(f"📋 Files in directory: {files_in_dir}")
+        
         # Create a simple status file
         status_file = os.path.join(upload_dir, "status.txt")
         with open(status_file, "w") as f:
             f.write("processing")
+        print(f"📄 Created status file: {status_file}")
         
         # Simulate processing time
+        print(f"⏳ Simulating processing time...")
         time.sleep(2)
         
         # Create static reels directory
         static_reels_dir = "static/reels"
         os.makedirs(static_reels_dir, exist_ok=True)
+        print(f"📁 Created static reels directory: {static_reels_dir}")
         
         # Create a placeholder video file (just copy an image as video for now)
         image_files = glob.glob(os.path.join(upload_dir, "*.jpg")) + glob.glob(os.path.join(upload_dir, "*.jpeg")) + glob.glob(os.path.join(upload_dir, "*.png"))
+        print(f"🖼️ Found {len(image_files)} image files: {image_files}")
         
         if image_files:
             # Copy first image as placeholder video
@@ -52,15 +65,20 @@ def process_reel_simple(reel_id, description, title):
             placeholder_video = os.path.join(static_reels_dir, f"{reel_id}.mp4")
             shutil.copy2(image_files[0], placeholder_video)
             print(f"✅ Created placeholder video: {placeholder_video}")
+        else:
+            print(f"⚠️ No image files found to create video from")
         
         # Update status
         with open(status_file, "w") as f:
             f.write("completed")
+        print(f"📄 Updated status to completed")
         
         print(f"🎉 Reel {reel_id} processing completed!")
         
     except Exception as e:
         print(f"❌ Error processing reel {reel_id}: {e}")
+        import traceback
+        print(f"🔍 Full error traceback: {traceback.format_exc()}")
 
 @app.route("/")
 def home():
@@ -77,8 +95,11 @@ def create():
         
         print(f"🎬 Creating reel: {rec_id}")
         print(f"📝 Description: {desc}")
+        print(f"🏷️ Title: {title}")
+        print(f"📎 Files received: {list(request.files.keys())}")
         
         if not rec_id or not desc:
+            print(f"❌ Missing required fields - rec_id: {rec_id}, desc: {desc}")
             return render_template("create.html", myid=myid, error="Missing required fields")
             
         input_files = []
