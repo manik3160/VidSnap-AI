@@ -23,7 +23,7 @@ AI-powered reel generator that transforms your images into engaging Instagram re
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/VidSnap-AI.git
+   git clone https://github.com/manik3160/VidSnap-AI.git
    cd VidSnap-AI
    ```
 
@@ -36,6 +36,10 @@ AI-powered reel generator that transforms your images into engaging Instagram re
    ```bash
    # Create .env file
    ELEVENLABS_API_KEY=your_api_key_here
+   CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+   CLOUDINARY_API_KEY=your_cloudinary_api_key
+   CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+   SECRET_KEY=your_secret_key_here
    ```
 
 4. **Run the application**
@@ -43,9 +47,9 @@ AI-powered reel generator that transforms your images into engaging Instagram re
    python main.py
    ```
 
-5. **Start the video processor** (in a separate terminal)
+5. **Initialize database** (first time only)
    ```bash
-   python generate_process.py
+   # Visit http://localhost:5001/init-db
    ```
 
 6. **Open your browser**

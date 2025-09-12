@@ -1,14 +1,25 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
 import uuid
 from werkzeug.utils import secure_filename
 import os
+from models import db, Reel
+from cloud_storage import CloudStorage
 
 UPLOAD_FOLDER = 'user_uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app = Flask(__name__)
+
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///vidsnap.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = 'your-secret-key-here'  # Required for flash messages
+app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
+
+# Initialize database
+db.init_app(app)
+cloud_storage = CloudStorage()
 
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -23,40 +34,46 @@ def home():
 
 @app.route("/create", methods=["GET", "POST"])
 def create():
-    myid = uuid.uuid1()
+    myid = str(uuid.uuid1())
 
     if request.method == "POST":
         rec_id = request.form.get("uuid")
         desc = request.form.get("text")
+        title = request.form.get("title", "My Reel")
         
         if not rec_id or not desc:
             return render_template("create.html", myid=myid, error="Missing required fields")
             
         input_files = []
         try:
+            # Create upload directory
+            upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], rec_id)
+            os.makedirs(upload_dir, exist_ok=True)
+            
+            # Save uploaded files
             for key, value in request.files.items():
-                print(key, value)
-                #upload the file
                 file = request.files[key]
                 if file and file.filename != '':
                     if allowed_file(file.filename):
                         filename = secure_filename(file.filename)
-                        upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], rec_id)
-                        if not os.path.exists(upload_dir):
-                            os.makedirs(upload_dir, exist_ok=True)
                         file.save(os.path.join(upload_dir, filename))
                         input_files.append(filename)
                     else:
                         return render_template("create.html", myid=myid, error="Invalid file type")
             
-            #capture the description and save it to a file
-            with open(os.path.join(app.config['UPLOAD_FOLDER'], rec_id, "desc.txt"), "w") as file:
+            # Save description
+            with open(os.path.join(upload_dir, "desc.txt"), "w") as file:
                 file.write(desc)
-                
-            #create input.txt for ffmpeg
-            for fl in input_files:
-                with open(os.path.join(app.config['UPLOAD_FOLDER'], rec_id, "input.txt"), "a") as f:
-                    f.write(f"file '{fl}'\nduration 1\n")
+            
+            # Create reel record in database
+            new_reel = Reel(
+                reel_id=rec_id,
+                title=title,
+                description=desc,
+                status='processing'
+            )
+            db.session.add(new_reel)
+            db.session.commit()
                     
         except Exception as e:
             return render_template("create.html", myid=myid, error=f"Upload failed: {str(e)}")
@@ -70,12 +87,20 @@ def create():
 @app.route("/gallery")
 def gallery():
     try:
-        reels_dir = "static/reels"
-        if not os.path.exists(reels_dir):
-            os.makedirs(reels_dir, exist_ok=True)
-        reels = [f for f in os.listdir(reels_dir) if f.endswith('.mp4')]
-        print(reels)
-        return render_template("gallery.html", reels=reels)
+        # Get reels from database
+        reels = Reel.query.filter_by(status='completed').all()
+        reel_data = []
+        
+        for reel in reels:
+            reel_data.append({
+                'id': reel.reel_id,
+                'name': reel.title,
+                'video_url': reel.video_url,
+                'thumbnail_url': reel.thumbnail_url,
+                'created_at': reel.created_at.strftime('%Y-%m-%d') if reel.created_at else 'Recently'
+            })
+        
+        return render_template("gallery.html", reels=reel_data)
     except Exception as e:
         print(f"Error loading gallery: {e}")
         return render_template("gallery.html", reels=[])
@@ -100,6 +125,18 @@ def delete_reel(reel_name):
         print(f"Error deleting reel {reel_name}: {e}")
         return {"success": False, "message": f"Error deleting reel: {str(e)}"}, 500
 
+@app.route("/init-db")
+def init_db():
+    """Initialize database tables"""
+    try:
+        with app.app_context():
+            db.create_all()
+        return "Database initialized successfully!"
+    except Exception as e:
+        return f"Error initializing database: {e}"
+
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)
