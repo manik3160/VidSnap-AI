@@ -134,6 +134,8 @@ def process_reel_background(reel_id, description, title):
             import shutil
             shutil.move(video_path, os.path.join(static_reels_dir, f"{reel_id}.mp4"))
             print(f"✅ Video moved to static folder")
+        else:
+            print(f"⚠️ Video file not found: {video_path}")
         
         print(f"🎉 Reel {reel_id} processing completed!")
         
@@ -237,7 +239,7 @@ def gallery():
                     reel_id = os.path.basename(video_file).replace('.mp4', '')
                     reel_data.append({
                         'id': reel_id,
-                        'name': f"Reel {reel_id}",
+                        'name': f"Reel {reel_id[:8]}",
                         'video_url': f"/static/reels/{reel_id}.mp4",
                         'thumbnail_url': f"/static/reels/{reel_id}.jpg",
                         'status': 'completed',

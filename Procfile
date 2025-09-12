@@ -1,1 +1,1 @@
-web: python main_complete.py
+web: python main_working.py
