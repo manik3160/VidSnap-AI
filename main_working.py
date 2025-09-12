@@ -96,6 +96,10 @@ def create():
 
     if request.method == "POST":
         print(f"🚨 POST REQUEST RECEIVED!")
+        print(f"📊 Request content type: {request.content_type}")
+        print(f"📋 Form data: {dict(request.form)}")
+        print(f"📎 Files: {list(request.files.keys())}")
+        
         rec_id = request.form.get("uuid")
         desc = request.form.get("text")
         title = request.form.get("title", "My Reel")
@@ -147,8 +151,20 @@ def create():
             return render_template("create.html", myid=myid, error=f"Upload failed: {str(e)}")
         
         # If we reach here, upload was successful
-        flash(f"Reel {rec_id} uploaded successfully! Processing in background...", "success")
-        return redirect(url_for('gallery'))
+        print(f"✅ Upload successful for reel {rec_id}")
+        
+        # Check if this is a fetch request (AJAX)
+        if request.headers.get('Content-Type', '').startswith('multipart/form-data'):
+            # This is a fetch request, return JSON
+            return jsonify({
+                "success": True, 
+                "message": f"Reel {rec_id} uploaded successfully! Processing in background...",
+                "reel_id": rec_id
+            })
+        else:
+            # This is a regular form submission, redirect
+            flash(f"Reel {rec_id} uploaded successfully! Processing in background...", "success")
+            return redirect(url_for('gallery'))
      
     return render_template("create.html", myid=myid)
 
