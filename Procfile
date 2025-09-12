@@ -1,1 +1,1 @@
-web: python main_with_db.py
+web: python main_complete.py
