@@ -6,14 +6,25 @@ from werkzeug.utils import secure_filename
 
 class CloudStorage:
     def __init__(self):
-        cloudinary.config(
-            cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
-            api_key=os.getenv('CLOUDINARY_API_KEY'),
-            api_secret=os.getenv('CLOUDINARY_API_SECRET')
-        )
+        self.cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
+        self.api_key = os.getenv('CLOUDINARY_API_KEY')
+        self.api_secret = os.getenv('CLOUDINARY_API_SECRET')
+        
+        if not all([self.cloud_name, self.api_key, self.api_secret]):
+            print("⚠️ Cloudinary credentials not found. Using local storage fallback.")
+            self.enabled = False
+        else:
+            cloudinary.config(
+                cloud_name=self.cloud_name,
+                api_key=self.api_key,
+                api_secret=self.api_secret
+            )
+            self.enabled = True
     
     def upload_image(self, file_path, folder="vidsnap/images"):
         """Upload image to Cloudinary"""
+        if not self.enabled:
+            return None
         try:
             result = cloudinary.uploader.upload(
                 file_path,
@@ -31,6 +42,8 @@ class CloudStorage:
     
     def upload_video(self, file_path, folder="vidsnap/videos"):
         """Upload video to Cloudinary"""
+        if not self.enabled:
+            return None
         try:
             result = cloudinary.uploader.upload(
                 file_path,
@@ -48,6 +61,8 @@ class CloudStorage:
     
     def upload_audio(self, file_path, folder="vidsnap/audio"):
         """Upload audio to Cloudinary"""
+        if not self.enabled:
+            return None
         try:
             result = cloudinary.uploader.upload(
                 file_path,
@@ -62,6 +77,8 @@ class CloudStorage:
     
     def delete_file(self, public_id):
         """Delete file from Cloudinary"""
+        if not self.enabled:
+            return False
         try:
             result = cloudinary.uploader.destroy(public_id)
             return result.get('result') == 'ok'
@@ -71,10 +88,12 @@ class CloudStorage:
     
     def get_thumbnail_url(self, video_url):
         """Generate thumbnail URL from video URL"""
+        if not self.enabled or not video_url:
+            return None
         try:
             # Extract public_id from URL
             public_id = video_url.split('/')[-1].split('.')[0]
-            thumbnail_url = f"https://res.cloudinary.com/{os.getenv('CLOUDINARY_CLOUD_NAME')}/video/upload/w_400,h_auto,c_fill,q_auto,f_auto/{public_id}.jpg"
+            thumbnail_url = f"https://res.cloudinary.com/{self.cloud_name}/video/upload/w_400,h_auto,c_fill,q_auto,f_auto/{public_id}.jpg"
             return thumbnail_url
         except Exception as e:
             print(f"Error generating thumbnail: {e}")
