@@ -76,9 +76,6 @@
                         <button class="play-btn" onclick="playVideo(this)">
                             <i class="fas fa-play"></i>
                         </button>
-                        <button class="volume-btn" onclick="toggleVolume(this)" title="Toggle Volume">
-                            <i class="fas fa-volume-up"></i>
-                        </button>
                         <div class="reel-duration">
                             <i class="fas fa-clock"></i>
                             <span>0:30</span>
@@ -100,6 +97,11 @@
                     <button class="action-btn delete-btn" onclick="deleteReel('{{reel.id}}', this)" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
+                    {% if reel.video_url %}
+                    <button class="action-btn volume-btn" onclick="toggleVolume(this)" title="Toggle Volume">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}
@@ -265,19 +267,20 @@ function playVideo(button) {
 
 // Toggle volume function
 function toggleVolume(button) {
-    const video = button.closest('.reel-thumbnail').querySelector('video');
+    const reelCard = button.closest('.reel-card');
+    const video = reelCard.querySelector('video');
     const icon = button.querySelector('i');
     
-    if (video.muted) {
-        video.muted = false;
-        icon.className = 'fas fa-volume-up';
-        button.title = 'Mute';
-        showToast('Volume on', 'success');
-    } else {
+    if (video && !video.muted) {
         video.muted = true;
         icon.className = 'fas fa-volume-mute';
         button.title = 'Unmute';
         showToast('Volume muted', 'info');
+    } else if (video) {
+        video.muted = false;
+        icon.className = 'fas fa-volume-up';
+        button.title = 'Mute';
+        showToast('Volume on', 'success');
     }
 }
 

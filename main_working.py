@@ -65,11 +65,36 @@ def process_reel_simple(reel_id, description, title):
         logger.info(f"🖼️ Found {len(image_files)} image files: {image_files}")
         
         if image_files:
-            # Copy first image as placeholder video
+            # Create a simple video from the first image
             import shutil
             placeholder_video = os.path.join(static_reels_dir, f"{reel_id}.mp4")
-            shutil.copy2(image_files[0], placeholder_video)
-            logger.info(f"✅ Created placeholder video: {placeholder_video}")
+            
+            # Try to create a simple video using FFmpeg if available
+            try:
+                import subprocess
+                # Create a 3-second video from the first image
+                cmd = [
+                    'ffmpeg', '-y',  # -y to overwrite output file
+                    '-loop', '1',  # Loop the input image
+                    '-i', image_files[0],  # Input image
+                    '-c:v', 'libx264',  # Video codec
+                    '-t', '3',  # Duration: 3 seconds
+                    '-pix_fmt', 'yuv420p',  # Pixel format for compatibility
+                    '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2',  # Scale to 720x1280 (vertical video)
+                    placeholder_video
+                ]
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                if result.returncode == 0:
+                    logger.info(f"✅ Created video with FFmpeg: {placeholder_video}")
+                else:
+                    logger.warning(f"FFmpeg failed, creating placeholder: {result.stderr}")
+                    shutil.copy2(image_files[0], placeholder_video)
+            except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
+                logger.warning(f"FFmpeg not available or failed ({e}), creating placeholder")
+                # Fallback: copy image as placeholder
+                shutil.copy2(image_files[0], placeholder_video)
+            
+            logger.info(f"✅ Created video: {placeholder_video}")
         else:
             logger.warning(f"⚠️ No image files found to create video from")
         
