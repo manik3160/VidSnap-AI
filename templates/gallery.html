@@ -53,10 +53,10 @@
         
         <div class="gallery-grid" id="galleryGrid">
             {% for reel in reels %}
-            <div class="reel-card" data-reel="{{ reel }}">
+            <div class="reel-card" data-reel="{{ reel.id }}">
                 <div class="reel-thumbnail">
                     <video 
-                        src="/static/reels/{{reel}}" 
+                        src="{{ reel.video_url }}" 
                         preload="metadata" 
                         playsinline
                         webkit-playsinline
@@ -79,17 +79,18 @@
                     </div>
                 </div>
                 <div class="reel-info">
-                    <h5 class="reel-name">{{ reel.split('.')[0][:20] }}{% if reel.split('.')[0]|length > 20 %}...{% endif %}</h5>
-                    <p class="reel-date">Created recently</p>
+                    <h5 class="reel-name">{{ reel.name[:20] }}{% if reel.name|length > 20 %}...{% endif %}</h5>
+                    <p class="reel-description">{{ reel.description[:50] }}{% if reel.description|length > 50 %}...{% endif %}</p>
+                    <p class="reel-date">{{ reel.created_at }}</p>
                 </div>
                 <div class="reel-actions">
-                    <button class="action-btn download-btn" onclick="downloadReel('{{reel}}')" title="Download">
+                    <button class="action-btn download-btn" onclick="downloadReel('{{reel.id}}.mp4')" title="Download">
                         <i class="fas fa-download"></i>
                     </button>
-                    <button class="action-btn share-btn" onclick="shareReel('{{reel}}')" title="Share">
+                    <button class="action-btn share-btn" onclick="shareReel('{{reel.id}}.mp4')" title="Share">
                         <i class="fas fa-share-alt"></i>
                     </button>
-                    <button class="action-btn delete-btn" onclick="deleteReel('{{reel}}', this)" title="Delete">
+                    <button class="action-btn delete-btn" onclick="deleteReel('{{reel.id}}', this)" title="Delete">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
