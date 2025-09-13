@@ -76,20 +76,25 @@ def process_reel_simple(reel_id, description, title):
             # Try to create a simple video using FFmpeg if available
             try:
                 import subprocess
-                # Create a 3-second video from the first image with proper frame rate
+                # Create a 3-second video from the first image with simpler command
                 cmd = [
                     'ffmpeg', '-y',  # -y to overwrite output file
                     '-loop', '1',  # Loop the input image
                     '-i', image_files[0],  # Input image
                     '-c:v', 'libx264',  # Video codec
                     '-t', '3',  # Duration: 3 seconds
-                    '-r', '30',  # Frame rate: 30 fps
+                    '-r', '1',  # Frame rate: 1 fps (simpler)
                     '-pix_fmt', 'yuv420p',  # Pixel format for compatibility
-                    '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2',  # Scale to 720x1280 (vertical video)
+                    '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black',  # Scale to 720x1280 with black padding
                     '-movflags', '+faststart',  # Optimize for web streaming
                     placeholder_video
                 ]
+                logger.info(f"🎬 Running FFmpeg command: {' '.join(cmd)}")
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                logger.info(f"FFmpeg return code: {result.returncode}")
+                logger.info(f"FFmpeg stdout: {result.stdout}")
+                logger.info(f"FFmpeg stderr: {result.stderr}")
+                
                 if result.returncode == 0:
                     # Check if video was actually created and has content
                     if os.path.exists(placeholder_video):
