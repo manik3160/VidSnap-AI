@@ -60,6 +60,10 @@ def process_reel_simple(reel_id, description, title):
         os.makedirs(static_reels_dir, exist_ok=True)
         logger.info(f"📁 Created static reels directory: {static_reels_dir}")
         
+        # Debug: List all files in upload directory
+        all_files = os.listdir(upload_dir)
+        logger.info(f"📁 All files in upload directory: {all_files}")
+        
         # Create a placeholder video file (just copy an image as video for now)
         image_files = glob.glob(os.path.join(upload_dir, "*.jpg")) + glob.glob(os.path.join(upload_dir, "*.jpeg")) + glob.glob(os.path.join(upload_dir, "*.png"))
         logger.info(f"🖼️ Found {len(image_files)} image files: {image_files}")
@@ -189,6 +193,10 @@ def create():
             with open(desc_file, "w", encoding="utf-8") as file:
                 file.write(desc)
             logger.info(f"✅ Saved description: {desc_file}")
+            
+            # Verify files were saved
+            saved_files = os.listdir(upload_dir)
+            logger.info(f"📋 Files in directory: {saved_files}")
             
             # Start background processing
             thread = threading.Thread(target=process_reel_simple, args=(rec_id, desc, title))
