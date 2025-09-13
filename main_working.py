@@ -47,7 +47,7 @@ def process_reel_simple(reel_id, description, title):
         
         # Create a simple status file
         status_file = os.path.join(upload_dir, "status.txt")
-        with open(status_file, "w") as f:
+        with open(status_file, "w", encoding="utf-8") as f:
             f.write("processing")
         logger.info(f"📄 Created status file: {status_file}")
         
@@ -74,7 +74,7 @@ def process_reel_simple(reel_id, description, title):
             logger.warning(f"⚠️ No image files found to create video from")
         
         # Update status
-        with open(status_file, "w") as f:
+        with open(status_file, "w", encoding="utf-8") as f:
             f.write("completed")
         logger.info(f"📄 Updated status to completed")
         
@@ -151,7 +151,7 @@ def create():
             
             # Save description
             desc_file = os.path.join(upload_dir, "desc.txt")
-            with open(desc_file, "w") as file:
+            with open(desc_file, "w", encoding="utf-8") as file:
                 file.write(desc)
             logger.info(f"✅ Saved description: {desc_file}")
             
@@ -202,8 +202,15 @@ def gallery():
                 desc_file = os.path.join(UPLOAD_FOLDER, reel_id, "desc.txt")
                 description = "No description"
                 if os.path.exists(desc_file):
-                    with open(desc_file, 'r') as f:
-                        description = f.read().strip()
+                    try:
+                        with open(desc_file, 'r', encoding='utf-8') as f:
+                            description = f.read().strip()
+                    except UnicodeDecodeError:
+                        try:
+                            with open(desc_file, 'r', encoding='latin-1') as f:
+                                description = f.read().strip()
+                        except:
+                            description = "Description (encoding issue)"
                 
                 reel_data.append({
                     'id': reel_id,
@@ -223,16 +230,30 @@ def gallery():
                     status_file = os.path.join(item_path, "status.txt")
                     status = "uploaded"
                     if os.path.exists(status_file):
-                        with open(status_file, 'r') as f:
-                            status = f.read().strip()
+                        try:
+                            with open(status_file, 'r', encoding='utf-8') as f:
+                                status = f.read().strip()
+                        except UnicodeDecodeError:
+                            try:
+                                with open(status_file, 'r', encoding='latin-1') as f:
+                                    status = f.read().strip()
+                            except:
+                                status = "unknown"
                     
                     # Only add if not already in reel_data
                     if not any(reel['id'] == item for reel in reel_data):
                         desc_file = os.path.join(item_path, "desc.txt")
                         description = "No description"
                         if os.path.exists(desc_file):
-                            with open(desc_file, 'r') as f:
-                                description = f.read().strip()
+                            try:
+                                with open(desc_file, 'r', encoding='utf-8') as f:
+                                    description = f.read().strip()
+                            except UnicodeDecodeError:
+                                try:
+                                    with open(desc_file, 'r', encoding='latin-1') as f:
+                                        description = f.read().strip()
+                                except:
+                                    description = "Description (encoding issue)"
                         
                         reel_data.append({
                             'id': item,
