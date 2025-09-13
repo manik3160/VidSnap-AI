@@ -72,20 +72,30 @@ def process_reel_simple(reel_id, description, title):
             # Try to create a simple video using FFmpeg if available
             try:
                 import subprocess
-                # Create a 3-second video from the first image
+                # Create a 3-second video from the first image with proper frame rate
                 cmd = [
                     'ffmpeg', '-y',  # -y to overwrite output file
                     '-loop', '1',  # Loop the input image
                     '-i', image_files[0],  # Input image
                     '-c:v', 'libx264',  # Video codec
                     '-t', '3',  # Duration: 3 seconds
+                    '-r', '30',  # Frame rate: 30 fps
                     '-pix_fmt', 'yuv420p',  # Pixel format for compatibility
                     '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2',  # Scale to 720x1280 (vertical video)
+                    '-movflags', '+faststart',  # Optimize for web streaming
                     placeholder_video
                 ]
                 result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
                 if result.returncode == 0:
-                    logger.info(f"✅ Created video with FFmpeg: {placeholder_video}")
+                    # Check if video was actually created and has content
+                    if os.path.exists(placeholder_video):
+                        video_size = os.path.getsize(placeholder_video)
+                        logger.info(f"✅ Created video with FFmpeg: {placeholder_video} ({video_size} bytes)")
+                        if video_size < 1000:  # Less than 1KB means something went wrong
+                            logger.warning(f"⚠️ Video file too small, may not be playable")
+                    else:
+                        logger.warning(f"⚠️ Video file not created, falling back to placeholder")
+                        shutil.copy2(image_files[0], placeholder_video)
                 else:
                     logger.warning(f"FFmpeg failed, creating placeholder: {result.stderr}")
                     shutil.copy2(image_files[0], placeholder_video)
@@ -274,6 +284,14 @@ def gallery():
                         # Check if video file actually exists
                         video_file = f"/static/reels/{item}.mp4"
                         video_exists = os.path.exists(f"static/reels/{item}.mp4")
+                        
+                        # Debug video file info
+                        if video_exists:
+                            try:
+                                video_size = os.path.getsize(f"static/reels/{item}.mp4")
+                                logger.info(f"📹 Video {item}: {video_size} bytes")
+                            except:
+                                pass
                         
                         reel_data.append({
                             'id': item,
