@@ -5,7 +5,12 @@ import os
 import glob
 import threading
 import time
+import logging
 from datetime import datetime
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 UPLOAD_FOLDER = 'user_uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -22,63 +27,63 @@ def allowed_file(filename):
 def process_reel_simple(reel_id, description, title):
     """Process a reel without FFmpeg - just create a placeholder video"""
     try:
-        print(f"🎬 Processing reel: {reel_id}")
-        print(f"📝 Description: {description}")
-        print(f"🏷️ Title: {title}")
+        logger.info(f"🎬 Processing reel: {reel_id}")
+        logger.info(f"📝 Description: {description}")
+        logger.info(f"🏷️ Title: {title}")
         
         # Find the user upload folder
         upload_dir = os.path.join(UPLOAD_FOLDER, reel_id)
-        print(f"📁 Looking for upload directory: {upload_dir}")
+        logger.info(f"📁 Looking for upload directory: {upload_dir}")
         
         if not os.path.exists(upload_dir):
-            print(f"❌ Upload directory not found: {upload_dir}")
+            logger.error(f"❌ Upload directory not found: {upload_dir}")
             return
         
-        print(f"✅ Upload directory found: {upload_dir}")
+        logger.info(f"✅ Upload directory found: {upload_dir}")
         
         # List files in directory
         files_in_dir = os.listdir(upload_dir)
-        print(f"📋 Files in directory: {files_in_dir}")
+        logger.info(f"📋 Files in directory: {files_in_dir}")
         
         # Create a simple status file
         status_file = os.path.join(upload_dir, "status.txt")
         with open(status_file, "w") as f:
             f.write("processing")
-        print(f"📄 Created status file: {status_file}")
+        logger.info(f"📄 Created status file: {status_file}")
         
         # Simulate processing time
-        print(f"⏳ Simulating processing time...")
+        logger.info(f"⏳ Simulating processing time...")
         time.sleep(2)
         
         # Create static reels directory
         static_reels_dir = "static/reels"
         os.makedirs(static_reels_dir, exist_ok=True)
-        print(f"📁 Created static reels directory: {static_reels_dir}")
+        logger.info(f"📁 Created static reels directory: {static_reels_dir}")
         
         # Create a placeholder video file (just copy an image as video for now)
         image_files = glob.glob(os.path.join(upload_dir, "*.jpg")) + glob.glob(os.path.join(upload_dir, "*.jpeg")) + glob.glob(os.path.join(upload_dir, "*.png"))
-        print(f"🖼️ Found {len(image_files)} image files: {image_files}")
+        logger.info(f"🖼️ Found {len(image_files)} image files: {image_files}")
         
         if image_files:
             # Copy first image as placeholder video
             import shutil
             placeholder_video = os.path.join(static_reels_dir, f"{reel_id}.mp4")
             shutil.copy2(image_files[0], placeholder_video)
-            print(f"✅ Created placeholder video: {placeholder_video}")
+            logger.info(f"✅ Created placeholder video: {placeholder_video}")
         else:
-            print(f"⚠️ No image files found to create video from")
+            logger.warning(f"⚠️ No image files found to create video from")
         
         # Update status
         with open(status_file, "w") as f:
             f.write("completed")
-        print(f"📄 Updated status to completed")
+        logger.info(f"📄 Updated status to completed")
         
-        print(f"🎉 Reel {reel_id} processing completed!")
+        logger.info(f"🎉 Reel {reel_id} processing completed!")
         
     except Exception as e:
-        print(f"❌ Error processing reel {reel_id}: {e}")
+        logger.error(f"❌ Error processing reel {reel_id}: {e}")
         import traceback
-        print(f"🔍 Full error traceback: {traceback.format_exc()}")
+        logger.error(f"🔍 Full error traceback: {traceback.format_exc()}")
 
 @app.route("/")
 def home():
@@ -86,41 +91,41 @@ def home():
 
 @app.route("/test-log")
 def test_log():
-    print("🧪 TEST LOG MESSAGE - This should appear in logs!")
+    logger.info("🧪 TEST LOG MESSAGE - This should appear in logs!")
     return "Test log message sent - check Railway logs!"
 
 @app.route("/test-create")
 def test_create():
-    print("🧪 TEST CREATE ROUTE CALLED!")
+    logger.info("🧪 TEST CREATE ROUTE CALLED!")
     return "Test create route working!"
 
 @app.route("/create", methods=["GET", "POST"])
 def create():
     myid = str(uuid.uuid1())
-    print("=" * 50)
-    print("🔍 CREATE ROUTE CALLED")
-    print(f"Method: {request.method}")
-    print("=" * 50)
+    logger.info("=" * 50)
+    logger.info("🔍 CREATE ROUTE CALLED")
+    logger.info(f"Method: {request.method}")
+    logger.info("=" * 50)
 
     if request.method == "POST":
-        print("🚨🚨🚨 POST REQUEST RECEIVED! 🚨🚨🚨")
-        print(f"Content-Type: {request.content_type}")
-        print(f"Headers: {dict(request.headers)}")
-        print(f"Form data: {dict(request.form)}")
-        print(f"Files: {list(request.files.keys())}")
-        print("=" * 50)
+        logger.info("🚨🚨🚨 POST REQUEST RECEIVED! 🚨🚨🚨")
+        logger.info(f"Content-Type: {request.content_type}")
+        logger.info(f"Headers: {dict(request.headers)}")
+        logger.info(f"Form data: {dict(request.form)}")
+        logger.info(f"Files: {list(request.files.keys())}")
+        logger.info("=" * 50)
         
         rec_id = request.form.get("uuid")
         desc = request.form.get("text")
         title = request.form.get("title", "My Reel")
         
-        print(f"🎬 Creating reel: {rec_id}")
-        print(f"📝 Description: {desc}")
-        print(f"🏷️ Title: {title}")
-        print(f"📎 Files received: {list(request.files.keys())}")
+        logger.info(f"🎬 Creating reel: {rec_id}")
+        logger.info(f"📝 Description: {desc}")
+        logger.info(f"🏷️ Title: {title}")
+        logger.info(f"📎 Files received: {list(request.files.keys())}")
         
         if not rec_id or not desc:
-            print(f"❌ Missing required fields - rec_id: {rec_id}, desc: {desc}")
+            logger.error(f"❌ Missing required fields - rec_id: {rec_id}, desc: {desc}")
             return render_template("create.html", myid=myid, error="Missing required fields")
             
         input_files = []
@@ -128,19 +133,19 @@ def create():
             # Create upload directory
             upload_dir = os.path.join(app.config['UPLOAD_FOLDER'], rec_id)
             os.makedirs(upload_dir, exist_ok=True)
-            print(f"📁 Created directory: {upload_dir}")
+            logger.info(f"📁 Created directory: {upload_dir}")
             
             # Save uploaded files
             for key, value in request.files.items():
                 file = request.files[key]
                 if file and file.filename != '':
-                    print(f"📎 Processing file: {file.filename}")
+                    logger.info(f"📎 Processing file: {file.filename}")
                     if allowed_file(file.filename):
                         filename = secure_filename(file.filename)
                         file_path = os.path.join(upload_dir, filename)
                         file.save(file_path)
                         input_files.append(filename)
-                        print(f"✅ Saved file: {file_path}")
+                        logger.info(f"✅ Saved file: {file_path}")
                     else:
                         return render_template("create.html", myid=myid, error="Invalid file type")
             
@@ -148,20 +153,20 @@ def create():
             desc_file = os.path.join(upload_dir, "desc.txt")
             with open(desc_file, "w") as file:
                 file.write(desc)
-            print(f"✅ Saved description: {desc_file}")
+            logger.info(f"✅ Saved description: {desc_file}")
             
             # Start background processing
             thread = threading.Thread(target=process_reel_simple, args=(rec_id, desc, title))
             thread.daemon = True
             thread.start()
-            print(f"🚀 Background processing started for reel {rec_id}")
+            logger.info(f"🚀 Background processing started for reel {rec_id}")
                     
         except Exception as e:
-            print(f"❌ Error: {e}")
+            logger.error(f"❌ Error: {e}")
             return render_template("create.html", myid=myid, error=f"Upload failed: {str(e)}")
         
         # If we reach here, upload was successful
-        print(f"✅ Upload successful for reel {rec_id}")
+        logger.info(f"✅ Upload successful for reel {rec_id}")
         
         # Check if this is a fetch request (AJAX)
         if request.headers.get('Content-Type', '').startswith('multipart/form-data'):
@@ -181,7 +186,7 @@ def create():
 @app.route("/gallery")
 def gallery():
     try:
-        print("🖼️ Loading gallery...")
+        logger.info("🖼️ Loading gallery...")
         
         # Check for completed reels
         reel_data = []
@@ -239,17 +244,17 @@ def gallery():
                             'created_at': 'Recently'
                         })
         
-        print(f"🖼️ Gallery loaded with {len(reel_data)} reels")
+        logger.info(f"🖼️ Gallery loaded with {len(reel_data)} reels")
         return render_template("gallery.html", reels=reel_data)
             
     except Exception as e:
-        print(f"❌ Error loading gallery: {e}")
+        logger.error(f"❌ Error loading gallery: {e}")
         return render_template("gallery.html", reels=[], error=str(e))
 
 @app.route("/delete_reel/<reel_name>", methods=["POST"])
 def delete_reel(reel_name):
     try:
-        print(f"🗑️ Deleting reel: {reel_name}")
+        logger.info(f"🗑️ Deleting reel: {reel_name}")
         
         # Security check: ensure the filename is safe
         if not reel_name or '..' in reel_name or '/' in reel_name:
@@ -260,18 +265,18 @@ def delete_reel(reel_name):
         if os.path.exists(reel_path):
             import shutil
             shutil.rmtree(reel_path)
-            print(f"✅ Deleted reel folder: {reel_path}")
+            logger.info(f"✅ Deleted reel folder: {reel_path}")
         
         # Delete the video file
         video_path = os.path.join("static/reels", f"{reel_name}.mp4")
         if os.path.exists(video_path):
             os.remove(video_path)
-            print(f"✅ Deleted video file: {video_path}")
+            logger.info(f"✅ Deleted video file: {video_path}")
         
         return {"success": True, "message": "Reel deleted successfully"}
             
     except Exception as e:
-        print(f"❌ Error deleting reel {reel_name}: {e}")
+        logger.error(f"❌ Error deleting reel {reel_name}: {e}")
         return {"success": False, "message": f"Error deleting reel: {str(e)}"}, 500
 
 @app.route("/status")
@@ -293,7 +298,7 @@ def status():
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5001))
-    print(f"🚀 Starting VidSnap-AI Working Version on port {port}")
-    print(f"📁 Upload folder: {UPLOAD_FOLDER}")
-    print(f"🔑 Secret key set: {bool(app.secret_key)}")
+    logger.info(f"🚀 Starting VidSnap-AI Working Version on port {port}")
+    logger.info(f"📁 Upload folder: {UPLOAD_FOLDER}")
+    logger.info(f"🔑 Secret key set: {bool(app.secret_key)}")
     app.run(debug=False, host='0.0.0.0', port=port)
