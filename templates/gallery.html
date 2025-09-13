@@ -55,6 +55,7 @@
             {% for reel in reels %}
             <div class="reel-card" data-reel="{{ reel.id }}">
                 <div class="reel-thumbnail">
+                    {% if reel.video_url %}
                     <video 
                         src="{{ reel.video_url }}" 
                         preload="metadata" 
@@ -65,6 +66,12 @@
                     >
                         Your browser does not support the video tag.
                     </video>
+                    {% else %}
+                    <div class="processing-placeholder">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Processing...</p>
+                    </div>
+                    {% endif %}
                     <div class="reel-overlay">
                         <button class="play-btn" onclick="playVideo(this)">
                             <i class="fas fa-play"></i>
@@ -406,6 +413,27 @@ style.textContent = `
     
     .fade-in {
         animation: fadeIn 0.6s ease forwards;
+    }
+    
+    .processing-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+    }
+    
+    .processing-placeholder i {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .processing-placeholder p {
+        margin: 0;
+        font-weight: 500;
     }
 `;
 document.head.appendChild(style);

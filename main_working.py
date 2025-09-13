@@ -168,18 +168,9 @@ def create():
         # If we reach here, upload was successful
         logger.info(f"✅ Upload successful for reel {rec_id}")
         
-        # Check if this is a fetch request (AJAX)
-        if request.headers.get('Content-Type', '').startswith('multipart/form-data'):
-            # This is a fetch request, return JSON
-            return jsonify({
-                "success": True, 
-                "message": f"Reel {rec_id} uploaded successfully! Processing in background...",
-                "reel_id": rec_id
-            })
-        else:
-            # This is a regular form submission, redirect
-            flash(f"Reel {rec_id} uploaded successfully! Processing in background...", "success")
-            return redirect(url_for('gallery'))
+        # Always redirect to gallery after successful upload
+        flash(f"Reel {rec_id} uploaded successfully! Processing in background...", "success")
+        return redirect(url_for('gallery'))
      
     return render_template("create.html", myid=myid)
 
@@ -255,12 +246,16 @@ def gallery():
                                 except:
                                     description = "Description (encoding issue)"
                         
+                        # Check if video file actually exists
+                        video_file = f"/static/reels/{item}.mp4"
+                        video_exists = os.path.exists(f"static/reels/{item}.mp4")
+                        
                         reel_data.append({
                             'id': item,
                             'name': f"Reel {item[:8]}",
                             'description': description,
-                            'video_url': f"/static/reels/{item}.mp4" if status == "completed" else None,
-                            'thumbnail_url': f"/static/reels/{item}.jpg" if status == "completed" else None,
+                            'video_url': video_file if video_exists else None,
+                            'thumbnail_url': f"/static/reels/{item}.jpg" if video_exists else None,
                             'status': status,
                             'created_at': 'Recently'
                         })
