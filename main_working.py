@@ -73,65 +73,69 @@ def process_reel_simple(reel_id, description, title):
             import shutil
             placeholder_video = os.path.join(static_reels_dir, f"{reel_id}.mp4")
             
-            # Try to create an engaging video using FFmpeg if available
+            # Create a simple, reliable video using FFmpeg
             try:
                 import subprocess
-                # Create a 3-second video with zoom effect and audio
-                cmd = [
-                    'ffmpeg', '-y',  # -y to overwrite output file
-                    '-loop', '1',  # Loop the input image
-                    '-i', image_files[0],  # Input image
-                    '-f', 'lavfi',  # Generate audio
-                    '-i', 'sine=frequency=800:duration=3',  # Generate a simple tone (lower frequency)
-                    '-c:v', 'libx264',  # Video codec
-                    '-c:a', 'aac',  # Audio codec
-                    '-t', '3',  # Duration: 3 seconds
-                    '-r', '30',  # Frame rate: 30 fps for smooth motion
-                    '-pix_fmt', 'yuv420p',  # Pixel format for compatibility
-                    '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black',  # Scale without zoom for now
-                    '-shortest',  # End when shortest stream ends
-                    '-movflags', '+faststart',  # Optimize for web streaming
-                    placeholder_video
-                ]
-                logger.info(f"🎬 Running FFmpeg command: {' '.join(cmd)}")
-                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
-                logger.info(f"FFmpeg return code: {result.returncode}")
-                logger.info(f"FFmpeg stdout: {result.stdout}")
-                logger.info(f"FFmpeg stderr: {result.stderr}")
+                import random
                 
-                if result.returncode == 0:
-                    # Check if video was actually created and has content
-                    if os.path.exists(placeholder_video):
-                        video_size = os.path.getsize(placeholder_video)
-                        logger.info(f"✅ Created video with FFmpeg: {placeholder_video} ({video_size} bytes)")
-                        if video_size < 1000:  # Less than 1KB means something went wrong
-                            logger.warning(f"⚠️ Video file too small, may not be playable")
-                    else:
-                        logger.warning(f"⚠️ Video file not created, falling back to placeholder")
-                        shutil.copy2(image_files[0], placeholder_video)
-                else:
-                    logger.warning(f"Complex FFmpeg failed, trying simpler version: {result.stderr}")
-                    # Try a simpler version with basic audio
-                    simple_cmd = [
+                # Try to add background music from static/songs
+                songs_dir = 'static/songs'
+                background_music = None
+                if os.path.exists(songs_dir):
+                    music_files = [f for f in os.listdir(songs_dir) if f.endswith('.mp3')]
+                    if music_files:
+                        background_music = os.path.join(songs_dir, random.choice(music_files))
+                        logger.info(f"🎵 Using background music: {background_music}")
+                
+                if background_music and os.path.exists(background_music):
+                    # Create video with background music
+                    cmd = [
                         'ffmpeg', '-y',
                         '-loop', '1',
                         '-i', image_files[0],
-                        '-f', 'lavfi',
-                        '-i', 'sine=frequency=800:duration=3',
+                        '-i', background_music,
                         '-c:v', 'libx264',
                         '-c:a', 'aac',
                         '-t', '3',
-                        '-r', '30',
+                        '-r', '1',  # 1 fps - simple and reliable
                         '-pix_fmt', 'yuv420p',
                         '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black',
                         '-shortest',
                         '-movflags', '+faststart',
                         placeholder_video
                     ]
-                    simple_result = subprocess.run(simple_cmd, capture_output=True, text=True, timeout=30)
-                    if simple_result.returncode != 0:
-                        logger.warning(f"Simple FFmpeg also failed, creating placeholder: {simple_result.stderr}")
+                else:
+                    # Create video without audio
+                    cmd = [
+                        'ffmpeg', '-y',
+                        '-loop', '1',
+                        '-i', image_files[0],
+                        '-c:v', 'libx264',
+                        '-t', '3',
+                        '-r', '1',  # 1 fps - simple and reliable
+                        '-pix_fmt', 'yuv420p',
+                        '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black',
+                        '-movflags', '+faststart',
+                        placeholder_video
+                    ]
+                logger.info(f"🎬 Running SIMPLE FFmpeg command: {' '.join(cmd)}")
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+                logger.info(f"FFmpeg return code: {result.returncode}")
+                logger.info(f"FFmpeg stdout: {result.stdout}")
+                logger.info(f"FFmpeg stderr: {result.stderr}")
+                
+                if result.returncode == 0:
+                    if os.path.exists(placeholder_video):
+                        video_size = os.path.getsize(placeholder_video)
+                        logger.info(f"✅ Created video with FFmpeg: {placeholder_video} ({video_size} bytes)")
+                        if video_size < 1000:
+                            logger.warning(f"⚠️ Video file too small, may not be playable")
+                    else:
+                        logger.warning(f"⚠️ Video file not created, falling back to placeholder")
                         shutil.copy2(image_files[0], placeholder_video)
+                else:
+                    logger.warning(f"FFmpeg failed, creating placeholder: {result.stderr}")
+                    shutil.copy2(image_files[0], placeholder_video)
             except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
                 logger.warning(f"FFmpeg not available or failed ({e}), creating placeholder")
                 # Fallback: copy image as placeholder
