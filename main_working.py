@@ -73,19 +73,23 @@ def process_reel_simple(reel_id, description, title):
             import shutil
             placeholder_video = os.path.join(static_reels_dir, f"{reel_id}.mp4")
             
-            # Try to create a simple video using FFmpeg if available
+            # Try to create an engaging video using FFmpeg if available
             try:
                 import subprocess
-                # Create a 3-second video from the first image with simpler command
+                # Create a 3-second video with zoom effect and audio
                 cmd = [
                     'ffmpeg', '-y',  # -y to overwrite output file
                     '-loop', '1',  # Loop the input image
                     '-i', image_files[0],  # Input image
+                    '-f', 'lavfi',  # Generate audio
+                    '-i', 'sine=frequency=1000:duration=3',  # Generate a simple tone
                     '-c:v', 'libx264',  # Video codec
+                    '-c:a', 'aac',  # Audio codec
                     '-t', '3',  # Duration: 3 seconds
-                    '-r', '1',  # Frame rate: 1 fps (simpler)
+                    '-r', '30',  # Frame rate: 30 fps for smooth motion
                     '-pix_fmt', 'yuv420p',  # Pixel format for compatibility
-                    '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black',  # Scale to 720x1280 with black padding
+                    '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black,zoompan=z=1.1:d=90:x=iw/2-(iw/zoom/2):y=ih/2-(ih/zoom/2)',  # Scale with zoom effect
+                    '-shortest',  # End when shortest stream ends
                     '-movflags', '+faststart',  # Optimize for web streaming
                     placeholder_video
                 ]
@@ -106,8 +110,24 @@ def process_reel_simple(reel_id, description, title):
                         logger.warning(f"⚠️ Video file not created, falling back to placeholder")
                         shutil.copy2(image_files[0], placeholder_video)
                 else:
-                    logger.warning(f"FFmpeg failed, creating placeholder: {result.stderr}")
-                    shutil.copy2(image_files[0], placeholder_video)
+                    logger.warning(f"Complex FFmpeg failed, trying simpler version: {result.stderr}")
+                    # Try a simpler version without audio
+                    simple_cmd = [
+                        'ffmpeg', '-y',
+                        '-loop', '1',
+                        '-i', image_files[0],
+                        '-c:v', 'libx264',
+                        '-t', '3',
+                        '-r', '30',
+                        '-pix_fmt', 'yuv420p',
+                        '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black',
+                        '-movflags', '+faststart',
+                        placeholder_video
+                    ]
+                    simple_result = subprocess.run(simple_cmd, capture_output=True, text=True, timeout=30)
+                    if simple_result.returncode != 0:
+                        logger.warning(f"Simple FFmpeg also failed, creating placeholder: {simple_result.stderr}")
+                        shutil.copy2(image_files[0], placeholder_video)
             except (subprocess.TimeoutExpired, FileNotFoundError, Exception) as e:
                 logger.warning(f"FFmpeg not available or failed ({e}), creating placeholder")
                 # Fallback: copy image as placeholder
