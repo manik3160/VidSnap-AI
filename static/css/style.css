@@ -300,7 +300,7 @@ body {
     background: white;
     color: var(--primary-color);
     padding: 1rem 2.5rem;
-    border-radius: 50px;
+    border-radius: 60px;
     font-weight: 700;
     text-decoration: none;
     transition: var(--transition);
