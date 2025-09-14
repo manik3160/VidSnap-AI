@@ -82,13 +82,13 @@ def process_reel_simple(reel_id, description, title):
                     '-loop', '1',  # Loop the input image
                     '-i', image_files[0],  # Input image
                     '-f', 'lavfi',  # Generate audio
-                    '-i', 'sine=frequency=1000:duration=3',  # Generate a simple tone
+                    '-i', 'sine=frequency=800:duration=3',  # Generate a simple tone (lower frequency)
                     '-c:v', 'libx264',  # Video codec
                     '-c:a', 'aac',  # Audio codec
                     '-t', '3',  # Duration: 3 seconds
                     '-r', '30',  # Frame rate: 30 fps for smooth motion
                     '-pix_fmt', 'yuv420p',  # Pixel format for compatibility
-                    '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black,zoompan=z=1.1:d=90:x=iw/2-(iw/zoom/2):y=ih/2-(ih/zoom/2)',  # Scale with zoom effect
+                    '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black',  # Scale without zoom for now
                     '-shortest',  # End when shortest stream ends
                     '-movflags', '+faststart',  # Optimize for web streaming
                     placeholder_video
@@ -111,16 +111,20 @@ def process_reel_simple(reel_id, description, title):
                         shutil.copy2(image_files[0], placeholder_video)
                 else:
                     logger.warning(f"Complex FFmpeg failed, trying simpler version: {result.stderr}")
-                    # Try a simpler version without audio
+                    # Try a simpler version with basic audio
                     simple_cmd = [
                         'ffmpeg', '-y',
                         '-loop', '1',
                         '-i', image_files[0],
+                        '-f', 'lavfi',
+                        '-i', 'sine=frequency=800:duration=3',
                         '-c:v', 'libx264',
+                        '-c:a', 'aac',
                         '-t', '3',
                         '-r', '30',
                         '-pix_fmt', 'yuv420p',
                         '-vf', 'scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:color=black',
+                        '-shortest',
                         '-movflags', '+faststart',
                         placeholder_video
                     ]
