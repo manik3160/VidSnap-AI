@@ -1,1 +1,1 @@
-web: python main_working.py
+web: sh start.sh

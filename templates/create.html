@@ -272,14 +272,14 @@
 
     // Form submission
     createForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
         if (selectedFiles.length === 0) {
-            e.preventDefault();
             showToast('Please select at least one image', 'error');
             return;
         }
 
         if (!textInput.value.trim()) {
-            e.preventDefault();
             showToast('Please enter a description for your reel', 'error');
             return;
         }

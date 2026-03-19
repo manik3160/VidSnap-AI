@@ -27,7 +27,7 @@ fi
 
 # Start the background processor
 echo "🎬 Starting video processor..."
-python generate_process.py &
+python background_processor.py &
 PROCESSOR_PID=$!
 
 # Start the Flask app

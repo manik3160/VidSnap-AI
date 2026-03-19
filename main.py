@@ -12,7 +12,11 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app = Flask(__name__)
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///vidsnap.db')
+db_url = os.getenv('DATABASE_URL', 'sqlite:///vidsnap.db')
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
@@ -87,16 +91,18 @@ def create():
 @app.route("/gallery")
 def gallery():
     try:
-        # Get reels from database
-        reels = Reel.query.filter_by(status='completed').all()
+        # Get reels from database, newest first
+        reels = Reel.query.order_by(Reel.created_at.desc()).all()
         reel_data = []
         
         for reel in reels:
             reel_data.append({
                 'id': reel.reel_id,
                 'name': reel.title,
+                'description': reel.description,
                 'video_url': reel.video_url,
                 'thumbnail_url': reel.thumbnail_url,
+                'status': reel.status,
                 'created_at': reel.created_at.strftime('%Y-%m-%d') if reel.created_at else 'Recently'
             })
         
