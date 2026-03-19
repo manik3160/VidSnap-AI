@@ -100,6 +100,19 @@ def debug_reels():
     except Exception as e:
         return {"error": str(e)}, 500
 
+@app.route("/view-log")
+def view_log():
+    """View the background processor log"""
+    try:
+        log_path = "static/processor.log"
+        if not os.path.exists(log_path):
+            return "Log file not found", 404
+        with open(log_path, 'r') as f:
+            content = f.read()
+        return f"<pre>{content}</pre>"
+    except Exception as e:
+        return str(e), 500
+
 @app.route("/gallery")
 def gallery():
     try:

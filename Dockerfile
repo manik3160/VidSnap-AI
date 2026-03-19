@@ -29,6 +29,6 @@ ENV PORT=10000
 ENV FLASK_APP=main.py
 ENV PYTHONUNBUFFERED=1
 
-# Run both the background processor and the Flask app
-# We use a shell to run the processor in the background and the app in the foreground
-CMD python background_processor.py & python main.py
+# Run the application via the startup script
+RUN chmod +x start_render.sh
+CMD ["./start_render.sh"]
