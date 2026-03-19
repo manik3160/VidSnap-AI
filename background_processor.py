@@ -21,14 +21,18 @@ def create_app():
 
 def process_reels():
     """Process pending reels in the background"""
+    print("🚀 Background Processor Starting...")
     app = create_app()
     cloud_storage = CloudStorage()
     
     with app.app_context():
+        print(f"🔗 Connected to Database: {app.config['SQLALCHEMY_DATABASE_URI']}")
         while True:
             try:
                 # Get all processing reels
                 processing_reels = Reel.query.filter_by(status='processing').all()
+                if processing_reels:
+                    print(f"📦 Found {len(processing_reels)} reels to process.")
                 
                 for reel in processing_reels:
                     print(f"Processing reel: {reel.reel_id}")

@@ -1,1 +1,1 @@
-web: sh start.sh
+web: sh start_render.sh
