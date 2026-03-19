@@ -116,9 +116,23 @@ def process_single_reel(reel, cloud_storage):
         if result.returncode != 0:
             return {"success": False, "error": f"FFmpeg error: {result.stderr}"}
         
-        # Upload video to cloud
+        # Upload to cloud or use local path fallback
         video_url = cloud_storage.upload_video(video_path)
-        thumbnail_url = cloud_storage.get_thumbnail_url(video_url)
+        audio_url = cloud_storage.upload_audio(audio_path)
+        
+        # If cloud upload is disabled, use local static paths
+        if not video_url:
+            video_url = f"/static/reels/{reel.reel_id}.mp4"
+            # Move video to static/reels if it's not already there
+            static_reels_dir = "static/reels"
+            os.makedirs(static_reels_dir, exist_ok=True)
+            import shutil
+            shutil.copy2(video_path, os.path.join(static_reels_dir, f"{reel.reel_id}.mp4"))
+            
+        if not audio_url:
+            audio_url = f"/{upload_dir}/audio.mp3"
+            
+        thumbnail_url = cloud_storage.get_thumbnail_url(video_url) if video_url and "cloudinary" in video_url else None
         
         return {
             "success": True,

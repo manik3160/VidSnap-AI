@@ -21,12 +21,14 @@ COPY . .
 # Create necessary directories
 RUN mkdir -p user_uploads static/reels
 
-# Expose port
-EXPOSE 8080
+# Expose port (Render provides PORT env var)
+EXPOSE 10000
 
 # Set environment variables
-ENV PORT=8080
-ENV FLASK_APP=main_working.py
+ENV PORT=10000
+ENV FLASK_APP=main.py
+ENV PYTHONUNBUFFERED=1
 
-# Run the application
-CMD ["python", "main_working.py"]
+# Run both the background processor and the Flask app
+# We use a shell to run the processor in the background and the app in the foreground
+CMD python background_processor.py & python main.py
