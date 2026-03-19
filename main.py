@@ -88,6 +88,18 @@ def create():
      
     return render_template("create.html", myid=myid)
 
+@app.route("/debug-reels")
+def debug_reels():
+    """Diagnostic route to check reel statuses"""
+    try:
+        reels = Reel.query.order_by(Reel.created_at.desc()).all()
+        return {
+            "count": len(reels),
+            "reels": [reel.to_dict() for reel in reels]
+        }
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 @app.route("/gallery")
 def gallery():
     try:

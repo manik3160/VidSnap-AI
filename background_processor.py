@@ -5,7 +5,7 @@ import uuid
 from flask import Flask
 from models import db, Reel
 from cloud_storage import CloudStorage
-from text_to_audio import generate_audio
+from text_to_audio import text_to_speech_file
 import glob
 
 def create_app():
@@ -76,8 +76,7 @@ def process_single_reel(reel, cloud_storage):
                 description = f.read().strip()
             
             # Generate audio
-            audio_path = os.path.join(upload_dir, "audio.mp3")
-            generate_audio(description, audio_path)
+            audio_path = text_to_speech_file(description, reel.reel_id)
             
             # Upload audio to cloud
             audio_url = cloud_storage.upload_audio(audio_path)
