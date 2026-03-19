@@ -66,6 +66,12 @@
                     >
                         Your browser does not support the video tag.
                     </video>
+                    {% elif reel.status == 'failed' %}
+                    <div class="processing-placeholder failed">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <p>Processing Failed</p>
+                        <small style="font-size: 0.7rem; opacity: 0.8;">API Limit or Key Error</small>
+                    </div>
                     {% else %}
                     <div class="processing-placeholder">
                         <i class="fas fa-spinner fa-spin"></i>
