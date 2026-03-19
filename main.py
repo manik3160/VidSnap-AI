@@ -21,6 +21,32 @@ if db_url.startswith("postgres://"):
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+import sys
+
+# Ensure static directory exists
+os.makedirs('static', exist_ok=True)
+
+# Define log path
+log_path = os.path.join('static', 'processor.log')
+
+# Redirect stdout and stderr to the log file to capture background thread output
+class Logger(object):
+    def __init__(self):
+        self.terminal = sys.stdout
+        self.log = open(log_path, "a")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+        self.log.flush()
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
+sys.stdout = Logger()
+sys.stderr = sys.stdout
+
 app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 
 # Initialize database
@@ -121,10 +147,25 @@ def view_log():
     try:
         log_path = "static/processor.log"
         if not os.path.exists(log_path):
-            return "Log file not found", 404
+            # Create it if missing to avoid 404
+            open(log_path, 'a').close()
+            return "Log file empty (just created)", 200
+            
         with open(log_path, 'r') as f:
             content = f.read()
-        return f"<pre>{content}</pre>"
+        
+        # Add a simple HTML wrapper with auto-refresh
+        html = f"""
+        <html>
+        <head><meta http-equiv="refresh" content="5"></head>
+        <body style="background: #1a1a1a; color: #00ff00; font-family: monospace; padding: 20px;">
+            <h2>🚀 Live Processor Log (Auto-refresh: 5s)</h2>
+            <hr>
+            <pre>{content}</pre>
+        </body>
+        </html>
+        """
+        return html
     except Exception as e:
         return str(e), 500
 

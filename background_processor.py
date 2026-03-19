@@ -53,7 +53,9 @@ def process_reels():
                         print(f"Reel {reel.reel_id} processed successfully")
                         
                     except Exception as e:
-                        print(f"Error processing reel {reel.reel_id}: {e}")
+                        import traceback
+                        print(f"❌ Error processing reel {reel.reel_id}:")
+                        traceback.print_exc()
                         reel.status = 'failed'
                         db.session.commit()
                 
@@ -61,7 +63,9 @@ def process_reels():
                 time.sleep(10)
                 
             except Exception as e:
-                print(f"Error in background processor: {e}")
+                import traceback
+                print(f"🔥 Fatal error in background processor:")
+                traceback.print_exc()
                 time.sleep(30)
 
 def process_single_reel(reel, cloud_storage):
