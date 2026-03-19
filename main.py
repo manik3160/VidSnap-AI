@@ -3,8 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 import uuid
 from werkzeug.utils import secure_filename
 import os
+import threading
 from models import db, Reel
 from cloud_storage import CloudStorage
+from background_processor import process_reels
 
 UPLOAD_FOLDER = 'user_uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -24,6 +26,19 @@ app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')
 # Initialize database
 db.init_app(app)
 cloud_storage = CloudStorage()
+
+# Start background processor in a separate thread
+# This ensures it runs regardless of how Render starts the app
+def start_worker():
+    print("🧵 Starting background worker thread...")
+    # Delay import or call inside thread to ensure app context is ready
+    worker_thread = threading.Thread(target=process_reels, daemon=True)
+    worker_thread.start()
+
+# Start the worker only once
+with app.app_context():
+    if not os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        start_worker()
 
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

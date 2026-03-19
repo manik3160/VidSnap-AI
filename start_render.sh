@@ -1,17 +1,8 @@
 #!/bin/bash
 
-# Ensure log file exists before starting
-mkdir -p static
-touch static/processor.log
+# Ensure necessary directories exist
+mkdir -p user_uploads static/reels
 
-# Start the background processor and redirect logs to static folder for web access
-echo "🎬 Starting video processor..."
-python background_processor.py > static/processor.log 2>&1 &
-PROCESSOR_PID=$!
-
-# Start the Flask app
-echo "🌐 Starting Flask application..."
+# Start the Flask app (which now starts the background worker internally)
+echo "🚀 Starting VidSnapAI..."
 python main.py
-
-# Cleanup on exit
-trap "kill $PROCESSOR_PID 2>/dev/null" EXIT
