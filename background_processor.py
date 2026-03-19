@@ -46,11 +46,17 @@ def process_reels():
                             reel.video_url = result['video_url']
                             reel.thumbnail_url = result['thumbnail_url']
                             reel.audio_url = result['audio_url']
+                            print(f"✅ Reel {reel.reel_id} status prepared: completed")
                         else:
                             reel.status = 'failed'
+                            print(f"❌ Reel {reel.reel_id} status prepared: failed ({result.get('error', 'Unknown error')})")
                         
-                        db.session.commit()
-                        print(f"Reel {reel.reel_id} processed successfully")
+                        try:
+                            db.session.commit()
+                            print(f"💾 Reel {reel.reel_id} committed to DB with status: {reel.status}")
+                        except Exception as commit_error:
+                            print(f"⚠️  Database commit failed for {reel.reel_id}: {commit_error}")
+                            db.session.rollback()
                         
                     except Exception as e:
                         import traceback

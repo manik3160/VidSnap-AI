@@ -13,21 +13,27 @@ elevenlabs = ElevenLabs(
 
 
 def text_to_speech_file(text: str,folder:str) -> str:
-    # Calling the text_to_speech conversion API with detailed parameters
-    response = elevenlabs.text_to_speech.convert(
-        voice_id="pNInz6obpgDQGcFmaJgB", # Adam pre-made voice
-        output_format="mp3_22050_32",
-        text=text,
-        model_id="eleven_turbo_v2_5", # use the turbo model for low latency
-        # Optional voice settings that allow you to customize the output
-        voice_settings=VoiceSettings(
-            stability=0.0,
-            similarity_boost=1.0,
-            style=0.0,
-            use_speaker_boost=True,
-            speed=1.0,
-        ),
-    )
+    try:
+        # Calling the text_to_speech conversion API with detailed parameters
+        response = elevenlabs.text_to_speech.convert(
+            voice_id="pNInz6obpgDQGcFmaJgB", # Adam pre-made voice
+            output_format="mp3_22050_32",
+            text=text,
+            model_id="eleven_turbo_v2_5", # use the turbo model for low latency
+            # Optional voice settings that allow you to customize the output
+            voice_settings=VoiceSettings(
+                stability=0.0,
+                similarity_boost=1.0,
+                style=0.0,
+                use_speaker_boost=True,
+                speed=1.0,
+            ),
+        )
+    except Exception as api_err:
+        print(f"🔥 ElevenLabs API Error: {api_err}")
+        import traceback
+        traceback.print_exc()
+        raise api_err
 
     # uncomment the line below to play the audio back
     # play(response)
